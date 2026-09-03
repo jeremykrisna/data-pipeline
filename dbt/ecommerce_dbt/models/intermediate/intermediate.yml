@@ -1,0 +1,32 @@
+version: 2
+
+models:
+  - name: int_products
+    description: "Intermediate product model with business transformations."
+
+    columns:
+      - name: product_id
+        description: "Unique identifier for each product."
+        data_tests:
+          - not_null
+          - unique
+
+      - name: price
+        description: "Original product price."
+        data_tests:
+          - not_null
+
+      - name: discount_percentage
+        description: "Discount percentage applied to the product."
+        data_tests:
+          - not_null
+
+      - name: final_price
+        description: "Product price after applying discount."
+        data_tests:
+          - not_null
+
+      - name: inventory_value
+        description: "Current inventory value based on product price and stock."
+        data_tests:
+          - not_null

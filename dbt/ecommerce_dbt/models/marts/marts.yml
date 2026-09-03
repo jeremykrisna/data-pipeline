@@ -1,0 +1,51 @@
+version: 2
+
+models:
+  - name: dim_products
+    description: "Product dimension containing the current state of each product."
+
+    columns:
+      - name: product_id
+        description: "Unique identifier for each product."
+        data_tests:
+          - not_null
+          - unique
+
+      - name: product_name
+        description: "Product name."
+        data_tests:
+          - not_null
+
+      - name: category
+        description: "Product category."
+        data_tests:
+          - not_null
+
+  - name: fct_inventory
+    description: "Historical inventory snapshots by product."
+
+    columns:
+      - name: product_id
+        description: "Product identifier."
+        data_tests:
+          - not_null
+
+      - name: snapshot_at
+        description: "Timestamp when the product snapshot was captured."
+        data_tests:
+          - not_null
+
+      - name: stock
+        description: "Available product stock."
+        data_tests:
+          - not_null
+
+      - name: final_price
+        description: "Product price after applying discount."
+        data_tests:
+          - not_null
+
+      - name: inventory_value
+        description: "Estimated inventory value based on listed price and stock."
+        data_tests:
+          - not_null

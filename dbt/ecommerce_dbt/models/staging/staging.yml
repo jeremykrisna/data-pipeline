@@ -1,0 +1,32 @@
+version: 2
+
+models:
+  - name: stg_products
+    description: "Staging model for product data from the Bronze layer."
+
+    columns:
+      - name: product_id
+        description: "Unique identifier for each product."
+        data_tests:
+          - not_null
+          - unique
+
+      - name: product_name
+        description: "Product name."
+        data_tests:
+          - not_null
+
+      - name: category
+        description: "Product category."
+        data_tests:
+          - not_null
+
+      - name: price
+        description: "Product selling price."
+        data_tests:
+          - not_null
+
+      - name: stock
+        description: "Available product stock."
+        data_tests:
+          - not_null

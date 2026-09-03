@@ -1,0 +1,8 @@
+version: 2
+
+sources:
+  - name: bronze
+    database: warehouse
+    schema: main
+    tables:
+      - name: bronze_products

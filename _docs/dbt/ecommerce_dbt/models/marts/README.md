@@ -1,4 +1,4 @@
-<!-- METADATA: {"source_path": "dbt/ecommerce_dbt/models/marts", "source_sha": "c3f5ad34a522f0889edf54c1de99c0cd31348a02", "extraction_quality": "full_ast", "model": "gpt-5-mini", "generated_at": "2026-09-08T09:32:09Z", "doc_type": "directory"} -->
+<!-- METADATA: {"source_path": "dbt/ecommerce_dbt/models/marts", "source_sha": "c3f5ad34a522f0889edf54c1de99c0cd31348a02", "extraction_quality": "full_ast", "model": "gpt-5-mini", "generated_at": "2026-09-08T09:32:52Z", "doc_type": "directory"} -->
 [Documentation Home](../../../../README.md) > [dbt](../../../README.md) > [ecommerce_dbt](../../README.md) > [models](../README.md) > [marts](./README.md) > **marts**
 
 
@@ -11,27 +11,25 @@
 
 ## Purpose
 
-This directory contains the marts layer of an e-commerce dbt project, implemented as a small set of model SQL files and a YAML metadata file. It provides curated marts artifacts: a dimensional product view, an inventory fact-style projection, and model metadata including human-readable descriptions and column-level data tests.
+This directory contains the marts layer of an e-commerce dbt project: two SQL models that produce curated marts (a product dimension and an inventory fact/projection) and a YAML file that declares metadata and column-level data tests for those models. The artifacts here define what product attributes and inventory metrics are exposed to downstream analytics and capture model documentation and basic data quality expectations.
 
 ## Files
 
 | File | Description |
 | --- | --- |
-| `dim_products.sql` | A SQL model defining a dimensional view of product data for the marts layer by selecting a curated set of product attributes from an upstream staging/integration model named int_products, including identifiers, descriptive fields, logistical attributes, and commerce-related statuses and rules. |
-| `fct_inventory.sql` | A dbt model that defines a fact-style inventory projection named fct_inventory, projecting product identifiers, a snapshot timestamp, pricing and discount fields, inventory metrics, and product rating from an intermediate snapshots table (using dbt's ref to int_product_snapshots). |
-| `marts.yml` | A YAML file that defines dbt model metadata for the marts layer, declaring the dim_products and fct_inventory models and providing human-readable descriptions plus column-level metadata and basic data_tests such as not_null and unique, with the file versioned at 2. |
+| `dim_products.sql` | This SQL model defines a dimensional view of product data for the marts layer by selecting a curated set of product attributes from an upstream staging/integration model named int_products, listing identifiers, descriptive fields, logistical attributes, and commerce-related statuses and rules. |
+| `fct_inventory.sql` | This dbt model defines a fact-style inventory projection named fct_inventory that selects a defined set of product snapshot fields from an intermediate snapshots table, projecting identifiers, a snapshot timestamp, pricing and discount fields, inventory metrics, and product rating using dbt's ref to the int_product_snapshots source. |
+| `marts.yml` | This YAML file defines dbt model metadata for the marts layer, declaring the dim_products and fct_inventory models with human-readable descriptions and column-level metadata including descriptions and data_tests such as not_null and unique, and is versioned at 2. |
 
 ## Key Components
 
-- **`Dimensional product model`** (in `dim_products.sql`) — dim_products.sql provides the curated dimensional view of product attributes used by downstream marts consumers, centralizing identifiers, descriptive text, logistical attributes, and commerce-related status fields that are essential for product-level reporting and joins.
-- **`Inventory fact projection`** (in `fct_inventory.sql`) — fct_inventory.sql captures time-aware inventory and pricing metrics (snapshot timestamp, price/discount/final_price, stock, inventory_value, rating) and serves as the fact-style source for inventory analytics and aggregate reporting.
-- **`Model metadata and tests`** (in `marts.yml`) — marts.yml documents both models in this directory with descriptions and column-level metadata and encodes basic data quality expectations (not_null, unique), making it the authoritative place to understand model columns and their intended constraints for consumers and automated tests.
+- **`Product dimension model`** (in `dim_products.sql`) — Provides the curated set of product attributes used throughout the marts layer; it is the canonical place to look for identifiers, descriptive fields, logistical attributes, and commerce-related statuses that other analyses will reference.
+- **`Inventory fact/projection`** (in `fct_inventory.sql`) — Supplies the inventory and pricing snapshot metrics (stock, inventory_value, price, discounts, final_price, rating) that drive inventory-level reporting and joins to product dimension attributes for marts analytics.
+- **`Marts metadata and tests`** (in `marts.yml`) — Captures model-level documentation and enforces basic data quality expectations via column-level data_tests for both dim_products and fct_inventory, making it the authoritative source for descriptions and simple validation rules in this directory.
 
 ## Architecture Notes
 
-The directory is organized into two implementation SQL models and a single YAML file that provides dbt model metadata and tests. The SQL files (dim_products.sql and fct_inventory.sql) implement the marts artifacts: dim_products produces a dimensional product view with descriptive and logistical attributes, while fct_inventory projects inventory- and pricing-related snapshot fields for fact-style analysis. The YAML file (marts.yml) declares those models, supplies human-readable descriptions for them, and lists column-level metadata and basic data_tests (for example not_null and unique) so that model structure, documentation, and quality expectations are captured alongside the SQL implementations.
-
-A practical way to approach this directory is to read marts.yml to learn each model's documented purpose, column descriptions, and the data_tests applied, and then inspect the corresponding SQL files to see how those documented columns are materialized and populated. Together the SQL models and the YAML metadata form the marts layer deliverables: implementation plus documentation and basic quality checks.
+The directory is organized around two SQL models that implement marts-level artifacts and a single YAML file that documents those models and declares column tests. dim_products.sql defines a dimensional view focused on curated product attributes; fct_inventory.sql defines a fact-style inventory projection that emits snapshot timestamps, pricing/discount fields, inventory measures, and ratings. marts.yml consolidates human-readable descriptions and column-level metadata for the two models (including not_null and unique tests), so readers can consult it to understand intended column semantics and basic data quality constraints before or alongside reading the SQL models.
 
 ---
 

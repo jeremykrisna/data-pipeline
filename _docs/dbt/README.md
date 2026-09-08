@@ -1,4 +1,4 @@
-<!-- METADATA: {"source_path": "dbt", "source_sha": "8f846050c33c3a038c7c33a70f30e06e93ed9fd7", "extraction_quality": "navigation_stub", "model": "none", "generated_at": "2026-09-08T09:32:09Z", "doc_type": "directory"} -->
+<!-- METADATA: {"source_path": "dbt", "source_sha": "8f846050c33c3a038c7c33a70f30e06e93ed9fd7", "extraction_quality": "navigation_stub", "model": "none", "generated_at": "2026-09-08T09:32:52Z", "doc_type": "directory"} -->
 [Documentation Home](../README.md) > [dbt](./README.md) > **dbt**
 
 

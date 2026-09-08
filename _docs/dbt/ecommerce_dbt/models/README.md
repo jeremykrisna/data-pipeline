@@ -1,4 +1,4 @@
-<!-- METADATA: {"source_path": "dbt/ecommerce_dbt/models", "source_sha": "d95243ad8f63d2f16bc75392cf4a16ed577f0702", "extraction_quality": "navigation_stub", "model": "none", "generated_at": "2026-09-08T09:32:09Z", "doc_type": "directory"} -->
+<!-- METADATA: {"source_path": "dbt/ecommerce_dbt/models", "source_sha": "e465b409a9c3afb43f18a74803b960e2a8c3ddc3", "extraction_quality": "navigation_stub", "model": "none", "generated_at": "2026-09-08T09:32:52Z", "doc_type": "directory"} -->
 [Documentation Home](../../../README.md) > [dbt](../../README.md) > [ecommerce_dbt](../README.md) > [models](./README.md) > **models**
 
 
@@ -15,8 +15,8 @@ This directory groups the documented sections listed below. It contains no direc
 
 ## Sections
 
-- [intermediate](./intermediate/README.md)
 - [marts](./marts/README.md)
+- [staging](./staging/README.md)
 
 ---
 

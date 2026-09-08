@@ -2,10 +2,15 @@ import json
 from pathlib import Path
 
 import pandas as pd
+import os
+from pathlib import Path
 
+PROJECT_DIR = Path(
+    os.getenv("PROJECT_DIR", "/opt/airflow")
+)
 
-RAW_DIR = Path("data/raw/products")
-BRONZE_DIR = Path("data/bronze/products")
+RAW_DIR = PROJECT_DIR / "data/raw/products"
+BRONZE_DIR = PROJECT_DIR / "data/bronze/products"
 
 
 def json_to_parquet(input_file):

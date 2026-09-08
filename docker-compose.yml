@@ -1,3 +1,11 @@
+x-airflow-common: &airflow-common
+  build:
+    context: .
+    dockerfile: Dockerfile
+  environment:
+    AIRFLOW__CORE__EXECUTION_API_SERVER_URL: "http://airflow-api-server:8080/execution/"
+    TZ: Asia/Jakarta
+
 services:
 
   postgres:
@@ -7,6 +15,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
+      TZ: Asia/Jakarta
 
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -30,7 +39,7 @@ services:
 
 
   airflow-init:
-    image: apache/airflow:3.0.6
+    <<: *airflow-common
 
     depends_on:
       postgres:
@@ -40,6 +49,7 @@ services:
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD_URLENCODED}@postgres:5432/${POSTGRES_DB}
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__CORE__AUTH_MANAGER: airflow.providers.fab.auth_manager.fab_auth_manager.FabAuthManager
+      TZ: Asia/Jakarta
 
     command:
       - bash
@@ -54,9 +64,8 @@ services:
           --role Admin \
           --email ${AIRFLOW_ADMIN_EMAIL} || true
 
-
   airflow-api-server:
-    image: apache/airflow:3.0.6
+    <<: *airflow-common
 
     depends_on:
       postgres:
@@ -69,9 +78,16 @@ services:
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__CORE__AUTH_MANAGER: airflow.providers.fab.auth_manager.fab_auth_manager.FabAuthManager
 
+      AIRFLOW__CORE__EXECUTION_API_SERVER_URL: "http://airflow-api-server:8080/execution/"
+      AIRFLOW__API_AUTH__JWT_SECRET: ${AIRFLOW_JWT_SECRET}
+      TZ: Asia/Jakarta
+
     volumes:
       - ./airflow/dags:/opt/airflow/dags
       - ./airflow/logs:/opt/airflow/logs
+      - ./dbt:/opt/airflow/dbt
+      - ./data:/opt/airflow/data
+      - ./profiles:/home/airflow/.dbt
 
     ports:
       - "8080:8080"
@@ -80,7 +96,7 @@ services:
 
 
   airflow-scheduler:
-    image: apache/airflow:3.0.6
+    <<: *airflow-common
 
     depends_on:
       postgres:
@@ -92,20 +108,29 @@ services:
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD_URLENCODED}@postgres:5432/${POSTGRES_DB}
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__CORE__AUTH_MANAGER: airflow.providers.fab.auth_manager.fab_auth_manager.FabAuthManager
+
+      AIRFLOW__CORE__EXECUTION_API_SERVER_URL: "http://airflow-api-server:8080/execution/"
+      AIRFLOW__API_AUTH__JWT_SECRET: ${AIRFLOW_JWT_SECRET}
 
       AIRFLOW__CORE__PARALLELISM: 4
       AIRFLOW__CORE__MAX_ACTIVE_TASKS_PER_DAG: 2
       AIRFLOW__CORE__MAX_ACTIVE_RUNS_PER_DAG: 1
 
+      TZ: Asia/Jakarta
+
     volumes:
       - ./airflow/dags:/opt/airflow/dags
       - ./airflow/logs:/opt/airflow/logs
+      - ./dbt:/opt/airflow/dbt
+      - ./data:/opt/airflow/data
+      - ./profiles:/home/airflow/.dbt
+      - ./src:/opt/airflow/src
 
     command: scheduler
 
 
   airflow-dag-processor:
-    image: apache/airflow:3.0.6
+    <<: *airflow-common
 
     depends_on:
       postgres:
@@ -115,20 +140,21 @@ services:
 
     environment:
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD_URLENCODED}@postgres:5432/${POSTGRES_DB}
-      AIRFLOW__CORE__EXECUTOR: LocalExecutor
-      AIRFLOW__CORE__AUTH_MANAGER: airflow.providers.fab.auth_manager.fab_auth_manager.FabAuthManager
-
       AIRFLOW__DAG_PROCESSOR__PARSING_PROCESSES: 1
+      TZ: Asia/Jakarta
 
     volumes:
       - ./airflow/dags:/opt/airflow/dags
       - ./airflow/logs:/opt/airflow/logs
+      - ./dbt:/opt/airflow/dbt
+      - ./data:/opt/airflow/data
+      - ./profiles:/home/airflow/.dbt
 
     command: dag-processor
 
 
   airflow-triggerer:
-    image: apache/airflow:3.0.6
+    <<: *airflow-common
 
     depends_on:
       postgres:
@@ -140,6 +166,7 @@ services:
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD_URLENCODED}@postgres:5432/${POSTGRES_DB}
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__CORE__AUTH_MANAGER: airflow.providers.fab.auth_manager.fab_auth_manager.FabAuthManager
+      TZ: Asia/Jakarta
 
     volumes:
       - ./airflow/dags:/opt/airflow/dags
@@ -147,6 +174,37 @@ services:
 
     command: triggerer
 
+  dbt-docs:
+    <<: *airflow-common
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+      airflow-init:
+        condition: service_completed_successfully
+
+    environment:
+      TZ: Asia/Jakarta
+
+    volumes:
+      - ./dbt:/opt/airflow/dbt
+      - ./data:/opt/airflow/data
+      - ./profiles:/home/airflow/.dbt
+
+    ports:
+      - "8082:8080"
+
+    working_dir: /opt/airflow/dbt/ecommerce_dbt
+
+    command:
+      - bash
+      - -c
+      - |
+        dbt docs generate --profiles-dir /home/airflow/.dbt
+        dbt docs serve \
+          --profiles-dir /home/airflow/.dbt \
+          --host 0.0.0.0 \
+          --port 8080
 
 volumes:
   postgres_data:

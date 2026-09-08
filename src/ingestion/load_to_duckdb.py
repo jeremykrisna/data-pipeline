@@ -2,10 +2,16 @@ import duckdb
 from pathlib import Path
 from datetime import datetime
 import pendulum
+import os
+from pathlib import Path
+
+PROJECT_DIR = Path(
+    os.getenv("PROJECT_DIR", "/opt/airflow")
+)
 
 JAKARTA_TZ = pendulum.timezone("Asia/Jakarta")
-BRONZE_DIR = Path("data/bronze/products")
-DB_PATH = Path("data/warehouse.duckdb")
+BRONZE_DIR = PROJECT_DIR / "data/bronze/products"
+DB_PATH = PROJECT_DIR / "data/warehouse.duckdb"
 
 
 def create_ingestion_log(con):
@@ -215,6 +221,7 @@ def build_insert_query(con, parquet_file):
 
 
 def load_parquet(con, parquet_file):
+    parquet_file = parquet_file.resolve()
     print(f"Processing: {parquet_file}")
 
     if is_processed(con, parquet_file):

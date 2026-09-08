@@ -8,3 +8,7 @@ data/bronze/
 data/warehouse/
 *.db
 *.duckdb
+*.duckdb.wal
+*.duckdb.tmp
+airflow/logs/
+profiles/.user.yml

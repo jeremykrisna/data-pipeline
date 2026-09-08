@@ -1,0 +1,19 @@
+ecommerce_dbt:
+  outputs:
+    dev:
+      type: duckdb
+      path: /opt/airflow/data/dev.duckdb
+      threads: 1
+      attach:
+        - path: /opt/airflow/data/warehouse.duckdb
+          alias: warehouse
+
+    live:
+      type: duckdb
+      path: /opt/airflow/data/live.duckdb
+      threads: 4
+      attach:
+        - path: /opt/airflow/data/warehouse.duckdb
+          alias: warehouse
+
+  target: dev

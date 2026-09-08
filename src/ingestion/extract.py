@@ -5,7 +5,14 @@ from pathlib import Path
 import pendulum
 from api_client import fetch_products
 
-RAW_DIR = Path("data/raw/products")
+import os
+from pathlib import Path
+
+PROJECT_DIR = Path(
+    os.getenv("PROJECT_DIR", "/opt/airflow")
+)
+
+RAW_DIR = PROJECT_DIR / "data/raw/products"
 local_tz = pendulum.timezone("Asia/Jakarta")
 
 

@@ -1,3 +1,7 @@
+{{ config(
+    materialized='incremental'
+) }}
+
 SELECT
     product_id,
     product_name,
@@ -29,3 +33,12 @@ SELECT
     snapshot_at
 
 FROM {{ ref('stg_product_snapshots') }}
+
+{% if is_incremental() %}
+
+WHERE snapshot_at > (
+    SELECT MAX(snapshot_at)
+    FROM {{ this }}
+)
+
+{% endif %}

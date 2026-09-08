@@ -1,0 +1,42 @@
+name: dbt CI
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+      - dev
+
+jobs:
+  dbt-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dbt
+        run: |
+          pip install dbt-duckdb==1.11.0
+
+      - name: Check dbt version
+        run: |
+          dbt --version
+
+      - name: Create data directory
+        run: |
+          mkdir -p data
+
+      - name: Run dbt build
+        working-directory: dbt/ecommerce_dbt
+        run: |
+          dbt build \
+            --profiles-dir ../../profiles \
+            --target dev

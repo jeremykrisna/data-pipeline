@@ -1,4 +1,4 @@
-<!-- METADATA: {"source_path": "src", "source_sha": "100165316aff0e142e1a7d27e6a5ca7571a1a84c", "extraction_quality": "full_ast", "model": "gpt-5-mini", "generated_at": "2026-09-08T09:34:20Z", "doc_type": "directory"} -->
+<!-- METADATA: {"source_path": "src", "source_sha": "100165316aff0e142e1a7d27e6a5ca7571a1a84c", "extraction_quality": "full_ast", "model": "gpt-5-mini", "generated_at": "2026-09-08T09:35:32Z", "doc_type": "directory"} -->
 [Documentation Home](../README.md) > [src](./README.md) > **src**
 
 
@@ -11,7 +11,9 @@
 
 ## Purpose
 
-This directory contains Python modules that interact with DuckDB for development and testing purposes. It groups a project-level script intended to prepare a development database environment together with a test-oriented module that exercises DuckDB interactions.
+The src directory contains modules related to initializing and exercising a local development database environment using DuckDB. It groups a project-level script for creating or initializing a development database and a test-oriented module that references DuckDB for validation purposes.
+
+This directory is organized around direct DuckDB usage: one file performs project-level preparation of a development database environment, and the other is part of the test suite that imports and exercises DuckDB interactions.
 
 ## Files
 
@@ -45,12 +47,14 @@ Public classes, interfaces and functions in this directory, plus exported consta
 
 ## Key Components
 
-- **`Development database setup script`** (in `create_dev_db.py`) — create_dev_db.py is the script-style entry in this directory that prepares a development database environment using DuckDB; it is the primary artifact to inspect when understanding how a local or test database instance is initialized for the project.
-- **`DuckDB test module`** (in `test_duckdb.py`) — test_duckdb.py represents the test-side usage of DuckDB within the codebase and is the place to look for how DuckDB interactions are exercised or validated by the test suite.
+- **`Development DB setup script`** (in `create_dev_db.py`) — This script is the entry point for preparing a development database environment with DuckDB; it establishes the local/test database instance that other development and testing activities rely on.
+- **`DuckDB test module`** (in `test_duckdb.py`) — This test-oriented module brings DuckDB into the test suite and serves as the place where DuckDB interactions are exercised or validated, making it important for confirming that DuckDB is available and integrated in the project.
 
 ## Architecture Notes
 
-The directory is organized as a small collection of independent Python modules focused on DuckDB usage. create_dev_db.py is written as a script at module scope and is intended to prepare or initialize a development database environment. test_duckdb.py is a test-oriented module that imports DuckDB and is intended to exercise or validate DuckDB interactions as part of testing. Readers should treat create_dev_db.py as the implementation artifact for environment setup and test_duckdb.py as the verification or test artifact; both live alongside each other without declared internal module-to-module dependencies, so each file can be inspected and used independently to understand its role.
+The directory is organized as a small collection of top-level Python modules that directly import DuckDB at module scope. create_dev_db.py is a script-style module whose contents are intended to prepare or initialize a development database environment; its code is arranged at the module level rather than inside classes or named functions. test_duckdb.py is a test-oriented module that imports the DuckDB package and is intended to be part of the test suite that exercises DuckDB interactions.
+
+Readers should treat create_dev_db.py as the project-facing script for development database setup and test_duckdb.py as the test-facing module that validates DuckDB usage. Together they document and exercise the project's use of DuckDB: one establishes the local environment, the other references DuckDB within testing code.
 
 ---
 

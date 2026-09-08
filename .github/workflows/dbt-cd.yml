@@ -1,0 +1,123 @@
+name: dbt CD
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy-live:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dbt
+        run: |
+          pip install dbt-duckdb==1.11.0
+
+      - name: Create LIVE data directory
+        run: |
+          mkdir -p live_data
+
+      - name: Create LIVE warehouse
+        run: |
+          python - <<'PY'
+          import duckdb
+
+          con = duckdb.connect("live_data/warehouse.duckdb")
+
+          con.execute("""
+              CREATE TABLE bronze_products (
+                  id INTEGER,
+                  title VARCHAR,
+                  description VARCHAR,
+                  category VARCHAR,
+                  brand VARCHAR,
+                  sku VARCHAR,
+                  price DOUBLE,
+                  discountPercentage DOUBLE,
+                  rating DOUBLE,
+                  stock INTEGER,
+                  weight DOUBLE,
+                  dimensions JSON,
+                  tags JSON,
+                  images JSON,
+                  warrantyInformation VARCHAR,
+                  shippingInformation VARCHAR,
+                  availabilityStatus VARCHAR,
+                  returnPolicy VARCHAR,
+                  minimumOrderQuantity INTEGER,
+                  reviews JSON,
+                  meta JSON,
+                  thumbnail VARCHAR,
+                  source_file VARCHAR,
+                  snapshot_at TIMESTAMP,
+                  ingested_at TIMESTAMP
+              )
+          """)
+
+          con.execute("""
+              INSERT INTO bronze_products VALUES
+              (
+                  1,
+                  'Test Product',
+                  'CI test product',
+                  'test-category',
+                  'Test Brand',
+                  'TEST-001',
+                  100.00,
+                  10.0,
+                  4.5,
+                  10,
+                  1.5,
+                  '{"width": 10, "height": 20, "depth": 5}',
+                  '["test", "ci"]',
+                  '["https://example.com/test.jpg"]',
+                  '1 year',
+                  'Ships in 2 days',
+                  'In Stock',
+                  '30 days',
+                  1,
+                  '[]',
+                  '{"createdAt": "2026-09-08"}',
+                  'https://example.com/test.jpg',
+                  'ci_fixture.parquet',
+                  '2026-09-08 00:00:00',
+                  '2026-09-08 00:00:00'
+              )
+          """)
+
+          con.close()
+          PY
+
+      - name: Create LIVE profiles
+        run: |
+          mkdir -p live_profiles
+
+          cat > live_profiles/profiles.yml <<EOF
+          ecommerce_dbt:
+            outputs:
+              live:
+                type: duckdb
+                path: ${{ github.workspace }}/live_data/live.duckdb
+                threads: 4
+                attach:
+                  - path: ${{ github.workspace }}/live_data/warehouse.duckdb
+                    alias: warehouse
+
+            target: live
+          EOF
+
+      - name: Deploy dbt to LIVE
+        working-directory: dbt/ecommerce_dbt
+        run: |
+          dbt build \
+            --profiles-dir ../../live_profiles \
+            --target live

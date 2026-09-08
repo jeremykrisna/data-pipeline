@@ -30,13 +30,102 @@ jobs:
         run: |
           dbt --version
 
-      - name: Create data directory
+      - name: Create CI data directory
         run: |
-          mkdir -p data
+          mkdir -p ci_data
+
+      - name: Create CI warehouse
+        run: |
+          python - <<'PY'
+          import duckdb
+
+          con = duckdb.connect("ci_data/warehouse.duckdb")
+
+          con.execute("""
+              CREATE TABLE bronze_products (
+                  id INTEGER,
+                  title VARCHAR,
+                  description VARCHAR,
+                  category VARCHAR,
+                  brand VARCHAR,
+                  sku VARCHAR,
+                  price DOUBLE,
+                  discountPercentage DOUBLE,
+                  rating DOUBLE,
+                  stock INTEGER,
+                  weight DOUBLE,
+                  dimensions JSON,
+                  tags JSON,
+                  images JSON,
+                  warrantyInformation VARCHAR,
+                  shippingInformation VARCHAR,
+                  availabilityStatus VARCHAR,
+                  returnPolicy VARCHAR,
+                  minimumOrderQuantity INTEGER,
+                  reviews JSON,
+                  meta JSON,
+                  thumbnail VARCHAR,
+                  source_file VARCHAR,
+                  snapshot_at TIMESTAMP,
+                  ingested_at TIMESTAMP
+              )
+          """)
+
+          con.execute("""
+              INSERT INTO bronze_products VALUES
+              (
+                  1,
+                  'Test Product',
+                  'CI test product',
+                  'test-category',
+                  'Test Brand',
+                  'TEST-001',
+                  100.00,
+                  10.0,
+                  4.5,
+                  10,
+                  1.5,
+                  '{"width": 10, "height": 20, "depth": 5}',
+                  '["test", "ci"]',
+                  '["https://example.com/test.jpg"]',
+                  '1 year',
+                  'Ships in 2 days',
+                  'In Stock',
+                  '30 days',
+                  1,
+                  '[]',
+                  '{"createdAt": "2026-09-08"}',
+                  'https://example.com/test.jpg',
+                  'ci_fixture.parquet',
+                  '2026-09-08 00:00:00',
+                  '2026-09-08 00:00:00'
+              )
+          """)
+
+          con.close()
+          PY
+
+      - name: Create CI profiles
+        run: |
+          mkdir -p ci_profiles
+
+          cat > ci_profiles/profiles.yml <<'EOF'
+          ecommerce_dbt:
+            outputs:
+              dev:
+                type: duckdb
+                path: ${{ github.workspace }}/ci_data/dev.duckdb
+                threads: 1
+                attach:
+                  - path: ${{ github.workspace }}/ci_data/warehouse.duckdb
+                    alias: warehouse
+
+            target: dev
+          EOF
 
       - name: Run dbt build
-        working-directory: dbt/ecommerce_dbt
+        working-directory: ${{ github.workspace }}/dbt/ecommerce_dbt
         run: |
           dbt build \
-            --profiles-dir ../../profiles \
+            --profiles-dir ../../ci_profiles \
             --target dev

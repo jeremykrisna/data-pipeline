@@ -114,17 +114,17 @@ jobs:
             outputs:
               dev:
                 type: duckdb
-                path: ci_data/dev.duckdb
+                path: $GITHUB_WORKSPACE/ci_data/dev.duckdb
                 threads: 1
                 attach:
-                  - path: ci_data/warehouse.duckdb
+                  - path: $GITHUB_WORKSPACE/ci_data/warehouse.duckdb
                     alias: warehouse
 
             target: dev
           EOF
 
       - name: Run dbt build
-        working-directory: dbt/ecommerce_dbt
+        working-directory: $GITHUB_WORKSPACE/dbt/ecommerce_dbt
         run: |
           dbt build \
             --profiles-dir ../../ci_profiles \
